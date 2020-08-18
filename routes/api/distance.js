@@ -20,7 +20,7 @@ router.get('/', async (req, res, next) => {
         let personId = queryParams.personId;
         let from_date = queryParams.from_date;
         let to_date = queryParams.to_date;
-        let getDistanceTravelledInGivenDurationQuery = `SELECT * FROM DISTANCE_TRAVELLED
+        let getDistanceTravelledInGivenDurationQuery = `SELECT sum(distance) as sum FROM DISTANCE_TRAVELLED
         WHERE (from_date >= '${from_date}' AND to_date <= '${to_date}') and person_id=?;`;
         let getDistanceTravelledInGivenDurationQueryResult = await runQuery(getDistanceTravelledInGivenDurationQuery, [personId]);
 
