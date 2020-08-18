@@ -1,0 +1,18 @@
+{
+    
+    "server":{
+        "port": 3800,
+        "environment":"devlopment"
+        
+    },
+    
+
+    "database":{        
+            "db2connString":"DATABASE=BLUDB;HOSTNAME=dashdb-txn-sbox-yp-lon02-15.services.eu-gb.bluemix.net;PORT=50000;PROTOCOL=TCPIP;UID=svx17737;PWD=n+v4f95ptdwn2p2d;"            
+    }
+       
+       
+       
+   
+        
+}
