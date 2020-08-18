@@ -56,14 +56,15 @@ router.post('/', async (req, res, next) => {
         console.log(personExistQueryResult[0].DUPLICATE,'personExistQueryResult[0].DUPLICATE');
 
 
-        let selectPersonNameQuery = `SELECT PERSON_id FROM DISTANCE_TRAVELLED where person_name like ?`;
-        let selectPersonNameQueryResult = await runQuery(selectPersonNameQuery,[`'%' + ${body.person_name} + '%'`]);
+        let selectPersonNameQuery = `SELECT person_id FROM DISTANCE_TRAVELLED where person_name = ?`;
+        let selectPersonNameQueryResult = await runQuery(selectPersonNameQuery,[body.person_name]);
+        console.log(selectPersonNameQueryResult,'selectPersonNameQueryResult');
         console.log(selectPersonNameQueryResult.length,'selectPersonNameQueryResult.length');
         
 
       
 
-        if (personExistQueryResult[0].DUPLICATE != 0 || selectPersonNameQueryResult.length <= 0 ) {
+        if (personExistQueryResult[0].DUPLICATE != 0) {
             let keysArr = [];
             let valuesArr = [];
             let queMarks = [];
@@ -78,8 +79,25 @@ router.post('/', async (req, res, next) => {
             let postDistanceQueryResult = await runQuery(postDistanceQuery, [...valuesArr]);
             return res.status(200).send(postDistanceQueryResult);
         }
-        else {
-            return res.status(400).send({ message: 'person id is unique' });
+        else if(selectPersonNameQueryResult.length < 1 ) {
+            let keysArr = [];
+            let valuesArr = [];
+            let queMarks = [];
+            for (let key in body) {
+                keysArr.push(key);
+                valuesArr.push(body[key]);
+                queMarks.push('?');
+            }
+           
+
+            let postDistanceQuery = `SELECT * FROM FINAL TABLE (INSERT INTO DISTANCE_TRAVELLED (${keysArr.toString()}) VALUES (${queMarks.toString()}));`;
+            let postDistanceQueryResult = await runQuery(postDistanceQuery, [...valuesArr]);
+            return res.status(200).send(postDistanceQueryResult);
+        }
+        else{
+            
+                return res.status(400).send({ message: 'person id is unique' });
+            
         }
     }
     catch (error) {
