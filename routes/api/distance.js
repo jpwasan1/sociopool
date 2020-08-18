@@ -18,8 +18,10 @@ router.get('/', async (req, res, next) => {
             return res.status(400).send({ message: 'Invalid Entry' });
         }
         let personId = queryParams.personId;
+        let from_date = queryParams.from_date;
+        let to_date = queryParams.to_date;
         let getDistanceTravelledInGivenDurationQuery = `SELECT * FROM DISTANCE_TRAVELLED
-        WHERE (from_date >= '2020-08-06 13:30:44' AND to_date <= '2020-08-06 14:30:44') and person_id=?;`;
+        WHERE (from_date >= '${from_date}' AND to_date <= '${to_date}') and person_id=?;`;
         let getDistanceTravelledInGivenDurationQueryResult = await runQuery(getDistanceTravelledInGivenDurationQuery, [personId]);
 
 
@@ -48,15 +50,20 @@ router.post('/', async (req, res, next) => {
 
     
 
-        let distanceExistQuery = `SELECT COUNT(*) as duplicate FROM  DISTANCE_TRAVELLED WHERE PERSON_ID=? AND ISVISIBLE='Y';`
-        let distanceExistQueryResult = await runQuery(distanceExistQuery, [body.person_id]);
-        console.log(distanceExistQueryResult.length,'distanceExistQueryResult.length');
-        console.log(distanceExistQueryResult[0].DUPLICATE,'distanceExistQueryResult[0].DUPLICATE');
+        let personExistQuery = `SELECT COUNT(*) as duplicate FROM  DISTANCE_TRAVELLED WHERE PERSON_ID=? AND PERSON_NAME=?;`
+        let personExistQueryResult = await runQuery(personExistQuery, [body.person_id, body.person_name]);
+        console.log(personExistQueryResult.length,'personExistQueryResult.length');
+        console.log(personExistQueryResult[0].DUPLICATE,'personExistQueryResult[0].DUPLICATE');
+
+
+        let selectPersonNameQuery = `SELECT PERSON_id FROM DISTANCE_TRAVELLED where person_name like ?`;
+        let selectPersonNameQueryResult = await runQuery(selectPersonNameQuery,[`'%' + ${body.person_name} + '%'`]);
+        console.log(selectPersonNameQueryResult.length,'selectPersonNameQueryResult.length');
         
 
       
 
-        if (distanceExistQueryResult[0].DUPLICATE == 0) {
+        if (personExistQueryResult[0].DUPLICATE != 0 || selectPersonNameQueryResult.length <= 0 ) {
             let keysArr = [];
             let valuesArr = [];
             let queMarks = [];
@@ -72,7 +79,7 @@ router.post('/', async (req, res, next) => {
             return res.status(200).send(postDistanceQueryResult);
         }
         else {
-            return res.status(400).send({ message: 'distance already exists for the person' });
+            return res.status(400).send({ message: 'person id is unique' });
         }
     }
     catch (error) {
